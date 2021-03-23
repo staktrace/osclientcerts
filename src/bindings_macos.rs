@@ -42,4 +42,5 @@ extern "C" {
     // Available starting macOS 10.7
     pub static kSecClassIdentity: CFStringRef;
     pub static kSecAttrKeyTypeRSA: CFStringRef;
+    pub fn SecIdentityCopyPreferred(name: CFStringRef, keyUsage: *const CFArrayRef, validIssuers: *mut CFArrayRef) -> SecIdentityRef;
 }

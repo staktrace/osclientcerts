@@ -9,6 +9,7 @@ use libloading::{Library, Symbol};
 use pkcs11::types::*;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
+use std::ptr;
 use std::os::raw::c_void;
 
 use core_foundation::array::*;
@@ -894,4 +895,21 @@ fn list_identities() -> Option<Vec<(Cert, Key)>> {
         }
     }
     Some(identities_out)
+}
+
+#[test]
+fn test_dump() {
+    let host = "https://bar.com/path".to_string().into_bytes();
+    let host = unsafe { CFStringCreateWithCString(ptr::null(), host.as_ptr() as *const i8, kCFStringEncodingUTF8) };
+    let res = unsafe { SecIdentityCopyPreferred(host, ptr::null(), &mut ptr::null()) };
+    if res.is_null() {
+        println!("Got null back");
+        return;
+    }
+    let identity = unsafe { SecIdentity::wrap_under_get_rule(res as SecIdentityRef) };
+    if let Ok(cert) = Cert::new(&identity) {
+        println!("Got cert with label {}", String::from_utf8_lossy(&cert.label));
+    } else {
+        println!("Couldn't parse cert?");
+    }
 }
